@@ -1,7 +1,7 @@
 import { NotificationChannel } from '../utils/enums/NotificationChannel.enum';
 
 export type BookingNotificationDto = {
-    bookingId: number
+    bookingId: bigint
     candidateId: number
     submissionId: string
     candidateName: string

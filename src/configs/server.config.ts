@@ -25,6 +25,13 @@ type AiSensyConfig = {
     AISENSY_API_URL: string
 }
 
+type DBConfig = {
+    DB_HOST: string
+    DB_USER: string
+    DB_PASSWORD: string
+    DB_NAME: string
+}
+
 dotenv.config();
 
 export const serverConfig: ServerConfig =  {
@@ -50,4 +57,11 @@ export const awsConfig: AwsConfig = {
 export const aiSensyConfig: AiSensyConfig = {
     AISENSY_API_KEY: process.env.AISENSY_API_KEY || '',
     AISENSY_API_URL: process.env.AISENSY_API_URL || ''
+};
+
+export const dbConfig: DBConfig = {
+    DB_HOST: process.env.DB_HOST || 'localhost',
+    DB_USER: process.env.DB_USER || 'root',
+    DB_PASSWORD: process.env.DB_PASSWORD || '1748arijiT#',
+    DB_NAME: process.env.DB_NAME || 'ic_notifications',
 };

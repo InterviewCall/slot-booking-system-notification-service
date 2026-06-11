@@ -3,35 +3,33 @@ import { SendEmailCommand, SendEmailCommandOutput } from '@aws-sdk/client-sesv2'
 import { sesClient } from '../../configs/aws.config';
 import { sesConfig } from '../../configs/server.config';
 import { renderTemplate } from '../../templates/template.handler';
-import { NotificationPayload } from '../../types/NotificationPayload.type';
+import { NotificationExecutorPayload } from '../../types/NotificationPayload.type';
 import { TemplateType } from '../../utils/enums/TemplateType.enum';
-import { InternalServerError } from '../../utils/errors/app.error';
+import { BadRequestError, InternalServerError } from '../../utils/errors/app.error';
 import { NotificationExecutorStrategy } from '../NotificationExecutor.strategy';
 
 export class EmailExecutor implements NotificationExecutorStrategy {
-    async send(payload: NotificationPayload): Promise<string> {
-        const contentParams = {
-            candidateName: payload.candidateName,
-            slotDate: payload.slotDate,
-            slotTime: payload.slotTime
-        };
+    async send(payload: NotificationExecutorPayload): Promise<string> {
+        if(!payload.emailParams) {
+            throw new BadRequestError('No content recieved to send');
+        }
 
         const htmlContent = await renderTemplate(
-            payload.templateKeys.EMAIL,
+            payload.templateKey,
             TemplateType.HTML,
-            contentParams
+            payload.emailParams
         );
 
         const textContent = await renderTemplate(
-            payload.templateKeys.EMAIL,
+            payload.templateKey,
             TemplateType.TEXT,
-            contentParams
+            payload.emailParams
         );
 
         const command = new SendEmailCommand({
             FromEmailAddress: `${sesConfig.SES_FROM_NAME} <${sesConfig.SES_FROM_EMAIL}>`,
             Destination: {
-                ToAddresses: [payload.candidateEmail]
+                ToAddresses: [payload.recipient]
             },
             ReplyToAddresses: [sesConfig.SES_REPLY_TO_EMAIL],
             ConfigurationSetName: sesConfig.SES_CONFIGURATION_SET_NAME,

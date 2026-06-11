@@ -4,9 +4,10 @@ import { bullMqConnection } from '../configs/bullMq.config';
 import logger from '../configs/logger.config';
 import { TRANSACTIONAL_NOTIFICATION_PAYLOAD, TRANSACTIONAL_NOTIFICATION_QUEUE } from '../constants';
 import { BookingNotificationDto } from '../dto/BookingNotification.dto';
-import { NotificationPayload } from '../types/NotificationPayload.type';
-import { BadRequestError, NotFoundError } from '../utils/errors/app.error';
-import { createNotificationExecutor } from '../utils/executorFactory';
+import NotificationRepository from '../repositories/Notification.repository';
+import NotificationDeliveryRepository from '../repositories/NotificationDelivery.repository';
+import TransactionalNotificationService from '../services/TransactionalNotification.service';
+import { BadRequestError } from '../utils/errors/app.error';
 
 export function setupTransactionalNotificationProcessor() {
     const transactionalProcessor = new Worker<BookingNotificationDto>(
@@ -18,33 +19,13 @@ export function setupTransactionalNotificationProcessor() {
 
             const payload = job.data;
 
-            const notificationPayload: NotificationPayload = {
-                candidateName: payload.candidateName,
-                candidateEmail: payload.candidateEmail,
-                candidatePhone: payload.candidatePhone,
-                slotDate: payload.slotDate,
-                slotTime: payload.slotTime,
-                subject: payload.subject,
-                templateKeys: payload.templateKeys
-            };
+            const transactionalNotificationService = new TransactionalNotificationService(
+                new NotificationRepository(),
+                new NotificationDeliveryRepository()
+            );
 
-            for(const channel of payload.channels) {
-                const strategy = createNotificationExecutor(channel);
-                
-                if(strategy == null) {
-                    throw new NotFoundError(`Channel not found: ${channel}`);
-                }
+            await transactionalNotificationService.sendNotification(payload);
 
-                const providerMessageId: string = await strategy.send(notificationPayload);
-
-                logger.info('Notification sent successfully', {
-                    jobId: job.id,
-                    channel,
-                    providerMessageId,
-                    candidateId: payload.candidateId,
-                    bookingId: payload.bookingId,
-                });
-            }
         }, {
             connection: bullMqConnection,
             concurrency: 5

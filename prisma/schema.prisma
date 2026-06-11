@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum NotificationChannel {
+  EMAIL
+  WHATSAPP
+}
+
+enum NotificationSendStatus {
+  PROCESSING
+  SENT
+  FAILED
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMED
+  FORM_SUBMITTED_SLOT_NOT_BOOKED_CHECK
+}
+
+model Notification {
+  id               BigInt                 @id @default(autoincrement())
+  candidateId      BigInt                 @map("candidate_id")
+  bookingId        BigInt?                @map("booking_id")
+  submissionId     String                 @map("submission_id") @db.Char(36)
+  notificationType NotificationType       @map("notification_type")
+  deliveries       NotificationDelivery[]
+
+  @@unique([bookingId, notificationType])
+  @@unique([submissionId, notificationType])
+  @@index([candidateId, bookingId, submissionId])
+  @@index([candidateId, submissionId])
+  @@index([candidateId])
+  @@map("notifications")
+}
+
+model NotificationDelivery {
+  id                BigInt                 @id @default(autoincrement())
+  notificationId    BigInt                 @map("notification_id")
+  notification      Notification           @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  channel           NotificationChannel
+  providerMessageId String?                @map("provider_message_id")
+  sendStatus        NotificationSendStatus @default(PROCESSING) @map("sent_status")
+  providerStatus    String?                @map("provider_status")
+  failedReason      String?                @map("failed_reason") @db.Text
+  submittedAt       DateTime?              @map("submitted_at")
+  failedAt          DateTime?              @map("failed_at")
+
+  @@unique([notificationId, channel])
+  @@index([channel])
+  @@index([sendStatus])
+  @@index([providerStatus])
+  @@index([providerMessageId])
+  @@map("notification_deliveries")
+}

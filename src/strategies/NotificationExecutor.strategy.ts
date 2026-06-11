@@ -1,5 +1,5 @@
-import { NotificationPayload } from '../types/NotificationPayload.type';
+import { NotificationExecutorPayload } from '../types/NotificationPayload.type';
 
 export interface NotificationExecutorStrategy {
-    send(payload: NotificationPayload): Promise<string>
+    send(payload: NotificationExecutorPayload): Promise<string>
 }

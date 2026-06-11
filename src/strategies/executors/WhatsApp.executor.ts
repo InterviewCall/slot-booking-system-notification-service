@@ -1,24 +1,24 @@
 import axios from 'axios';
 
 import { aiSensyConfig } from '../../configs/server.config';
-import { NotificationPayload } from '../../types/NotificationPayload.type';
+import { NotificationExecutorPayload } from '../../types/NotificationPayload.type';
 import { WhatsAppApiRequestBody } from '../../types/Request.type';
 import { WhatsAppApiResponse } from '../../types/Response.type';
-import { InternalServerError } from '../../utils/errors/app.error';
+import { BadRequestError, InternalServerError } from '../../utils/errors/app.error';
 import { NotificationExecutorStrategy } from '../NotificationExecutor.strategy';
 
 export class WhatsAppExecutor implements NotificationExecutorStrategy {
-    async send(payload: NotificationPayload): Promise<string> {
+    async send(payload: NotificationExecutorPayload): Promise<string> {
+        if(!payload.whatsAppParams) {
+            throw new BadRequestError('No content recieves to send');
+        }
+
         const requestBody: WhatsAppApiRequestBody = {
             apiKey: aiSensyConfig.AISENSY_API_KEY,
-            campaignName: payload.templateKeys.WHATSAPP,
-            destination: payload.candidatePhone,
+            campaignName: payload.templateKey,
+            destination: payload.recipient,
             userName: payload.candidateName,
-            templateParams: [
-                payload.candidateName,
-                payload.slotDate,
-                payload.slotTime
-            ]
+            templateParams: payload.whatsAppParams
         };
 
         const response = await axios.post<WhatsAppApiResponse>(
