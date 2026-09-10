@@ -1,4 +1,4 @@
-import { GetMessageInsightsCommand, SESv2Client } from '@aws-sdk/client-sesv2';
+import { GetMessageInsightsCommand,SESv2Client } from '@aws-sdk/client-sesv2';
 
 import logger from './logger.config';
 import { awsConfig } from './server.config';
@@ -138,4 +138,6 @@ export async function getSesEmailStatusByMessageId(
 
         throw error;
     }
+
+    
 }
