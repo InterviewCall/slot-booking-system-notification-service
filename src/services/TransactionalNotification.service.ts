@@ -24,7 +24,8 @@ class TransactionalNotificationService {
             candidateId: payload.candidateId,
             bookingId: payload.bookingId,
             submissionId: payload.submissionId,
-            notificationType: NotificationType.BOOKING_CONFIRMED
+            notificationType:
+                payload.notificationType ?? NotificationType.BOOKING_CONFIRMED
         });
 
         for(const channel of payload.channels) {

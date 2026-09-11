@@ -1,7 +1,8 @@
 import { NotificationChannel } from '../utils/enums/NotificationChannel.enum';
+import { NotificationType } from '../../generated/prisma/enums';
 
 export type BookingNotificationDto = {
-    bookingId: bigint
+    bookingId: bigint | null
     candidateId: number
     submissionId: string
     candidateName: string
@@ -12,4 +13,7 @@ export type BookingNotificationDto = {
     subject: string
     channels: NotificationChannel[]
     templateKeys: Record<NotificationChannel, string>
+
+    notificationType?: NotificationType;
+
 }

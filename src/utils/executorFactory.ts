@@ -8,9 +8,9 @@ export function createNotificationExecutor(channel: NotificationChannel): Notifi
         return new EmailExecutor();
     }
 
-    else if(channel == NotificationChannel.WHATSAPP) {
-        return new WhatsAppExecutor();
-    }
+    // else if(channel == NotificationChannel.WHATSAPP) {
+    //     return new WhatsAppExecutor();
+    // }
 
     return null;
 }
