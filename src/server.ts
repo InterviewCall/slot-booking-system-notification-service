@@ -5,6 +5,7 @@ import logger from './configs/logger.config';
 import { serverConfig } from './configs/server.config';
 import { attachCorrelationIdMiddleware } from './middlewares/correlation.middleware';
 import { appErrorHandler, genericErrorHandler } from './middlewares/error.middleware';
+import { setupReminderNotificationProcessor } from './processors/reminderNotification.processor';
 import { setupTransactionalNotificationProcessor } from './processors/transactionalNotification.processor';
 import apiRouter from './routes';
 
@@ -25,5 +26,6 @@ app.listen(serverConfig.PORT, () => {
     logger.info(`Server is running on http://localhost:${serverConfig.PORT}`);
     logger.info(`For Queue Dasboard, open http://localhost:${serverConfig.PORT}/ui/queue-dashboard`);
     setupTransactionalNotificationProcessor();
+    setupReminderNotificationProcessor();
     logger.info('Transactional notification processor setup completed');
 });
