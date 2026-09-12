@@ -20,6 +20,7 @@ class ReminderNotificationService {
         const notification = await this.notificationRepository.createNotification({
             candidateId: payload.candidateId,
             submissionId: payload.submissionId,
+            reminderNumber: payload.reminderNumber,
             notificationType: NotificationType.FORM_SUBMITTED_SLOT_NOT_BOOKED_CHECK
         });
 
