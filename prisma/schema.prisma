@@ -33,11 +33,12 @@ model Notification {
   candidateId      BigInt                 @map("candidate_id")
   bookingId        BigInt?                @map("booking_id")
   submissionId     String                 @map("submission_id") @db.Char(36)
+  reminderNumber   Int                    @default(0)@map("reminder_number")
   notificationType NotificationType       @map("notification_type")
   deliveries       NotificationDelivery[]
 
   @@unique([bookingId, notificationType])
-  @@unique([submissionId, notificationType])
+  @@unique([submissionId, notificationType, reminderNumber])
   @@index([candidateId, bookingId, submissionId])
   @@index([candidateId, submissionId])
   @@index([candidateId])
