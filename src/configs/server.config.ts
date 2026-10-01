@@ -4,7 +4,9 @@ type ServerConfig = {
     PORT: number,
     NODE_ENV?: string
     REDIS_PORT: number,
-    REDIS_HOST: string
+    REDIS_HOST: string,
+    REDIS_PASSWORD?: string,
+    REDIS_TLS: boolean
 }
 
 type QueueConfig = {
@@ -37,6 +39,8 @@ type DBConfig = {
     DB_USER: string
     DB_PASSWORD: string
     DB_NAME: string
+    DB_SSL: boolean
+    DB_SSL_CA_PATH: string
 }
 
 dotenv.config();
@@ -44,8 +48,17 @@ dotenv.config();
 export const serverConfig: ServerConfig =  {
     PORT: Number(process.env.PORT) || 3000,
     NODE_ENV: process.env.NODE_ENV,
-    REDIS_HOST: process.env.REDIS_Host || 'localhost',
-    REDIS_PORT: Number(process.env.REDIS_PORT) || 6379
+    REDIS_HOST: process.env.REDIS_HOST || 'localhost',
+    REDIS_PORT: Number(process.env.REDIS_PORT) || 6379,
+    // Managed Redis (ElastiCache) runs with an auth token and in-transit encryption
+    REDIS_PASSWORD: process.env.REDIS_PASSWORD || undefined,
+    REDIS_TLS: process.env.REDIS_TLS == 'true'
+};
+
+// Connection options shared by every Redis client (BullMQ)
+export const redisAuthOptions = {
+    ...(serverConfig.REDIS_PASSWORD ? { password: serverConfig.REDIS_PASSWORD } : {}),
+    ...(serverConfig.REDIS_TLS ? { tls: {} } : {})
 };
 
 // Job retry / retention policy, shared by every notification queue.
@@ -80,6 +93,9 @@ export const aiSensyConfig: AiSensyConfig = {
 export const dbConfig: DBConfig = {
     DB_HOST: process.env.DB_HOST || 'localhost',
     DB_USER: process.env.DB_USER || 'root',
-    DB_PASSWORD: process.env.DB_PASSWORD || '1748arijiT#',
+    DB_PASSWORD: process.env.DB_PASSWORD || '',
     DB_NAME: process.env.DB_NAME || 'ic_notifications',
+    // RDS: encrypt the connection and verify the server against the AWS CA bundle
+    DB_SSL: process.env.DB_SSL == 'true',
+    DB_SSL_CA_PATH: process.env.DB_SSL_CA_PATH || '/app/certs/rds-global-bundle.pem'
 };

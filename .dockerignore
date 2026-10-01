@@ -1,0 +1,12 @@
+node_modules
+dist
+logs
+.git
+.github
+.env
+.env.*
+*.log
+.DS_Store
+Dockerfile
+.dockerignore
+generated
