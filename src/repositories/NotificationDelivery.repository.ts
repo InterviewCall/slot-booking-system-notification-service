@@ -17,6 +17,32 @@ class NotificationDeliveryRepository implements INotificationDeliveryRepository 
         return delivery;
     }
 
+    /**
+     * One delivery row per (notification, channel). On a retry the existing row is returned
+     * so we can see which channels were already delivered.
+     */
+    async findOrCreateDelivery(channel: NotificationChannel, notificationId: bigint): Promise<NotificationDelivery> {
+        const where = { notificationId_channel: { notificationId, channel } };
+
+        const existing = await prisma.notificationDelivery.findUnique({ where });
+
+        if(existing) {
+            return existing;
+        }
+
+        try {
+            return await this.createDelivery(channel, notificationId);
+        } catch (error) {
+            const created = await prisma.notificationDelivery.findUnique({ where });
+
+            if(created) {
+                return created;
+            }
+
+            throw error;
+        }
+    }
+
     async markDeliverySubmitted(deliveryId: bigint, providerMessageId: string): Promise<void> {
         await prisma.notificationDelivery.update({
             where: {
@@ -25,7 +51,10 @@ class NotificationDeliveryRepository implements INotificationDeliveryRepository 
             data: {
                 providerMessageId,
                 sendStatus: NotificationSendStatus.SENT,
-                submittedAt: new Date()
+                submittedAt: new Date(),
+                // a retry may have succeeded after an earlier failure
+                failedReason: null,
+                failedAt: null
             }
         });
     }

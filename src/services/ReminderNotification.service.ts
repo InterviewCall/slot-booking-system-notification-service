@@ -1,14 +1,10 @@
-import { NotificationDelivery } from '../../generated/prisma/client';
 import { NotificationType } from '../../generated/prisma/enums';
-import logger from '../configs/logger.config';
 import { BookingReminderNotificationDto } from '../dto/BookingReminderNotification.dto';
 import NotificationRepository from '../repositories/Notification.repository';
 import NotificationDeliveryRepository from '../repositories/NotificationDelivery.repository';
-import { NotificationExecutorStrategy } from '../strategies/NotificationExecutor.strategy';
 import { NotificationExecutorPayload } from '../types/NotificationPayload.type';
 import { NotificationChannel } from '../utils/enums/NotificationChannel.enum';
-import { NotFoundError } from '../utils/errors/app.error';
-import { createNotificationExecutor } from '../utils/executorFactory';
+import { deliverToChannels } from './channelDelivery.helper';
 
 class ReminderNotificationService {
     constructor(
@@ -16,32 +12,26 @@ class ReminderNotificationService {
         private readonly notificationDeliveryRepository: NotificationDeliveryRepository
     ) {}
 
+    // Safe to run again for the same reminder: resumes the existing notification and only
+    // sends the channels that have not been delivered yet. Throws if any channel failed.
     async sendNotification(payload: BookingReminderNotificationDto): Promise<void> {
-        const notification = await this.notificationRepository.createNotification({
+        const notification = await this.notificationRepository.findOrCreateNotification({
             candidateId: payload.candidateId,
             submissionId: payload.submissionId,
             reminderNumber: payload.reminderNumber,
             notificationType: NotificationType.FORM_SUBMITTED_SLOT_NOT_BOOKED_CHECK
         });
 
-        for(const channel of payload.channels) {
-            const delivery: NotificationDelivery = await this.notificationDeliveryRepository.createDelivery(
-                channel,
-                notification.id
-            );
-
-            const notificationExecutor: NotificationExecutorStrategy | null = createNotificationExecutor(channel);
-                
-            if(notificationExecutor == null) {
-                throw new NotFoundError(`Channel not found: ${channel}`);
-            }
-
-            const executorPayload: NotificationExecutorPayload = {
+        await deliverToChannels({
+            notificationId: notification.id,
+            channels: payload.channels,
+            notificationDeliveryRepository: this.notificationDeliveryRepository,
+            buildExecutorPayload: (channel: NotificationChannel): NotificationExecutorPayload => ({
                 recipient: channel == NotificationChannel.EMAIL ? payload.candidateEmail : payload.candidatePhone,
                 candidateName: payload.candidateName,
                 subject: payload.subject,
                 templateKey: payload.templateKeys[channel],
-                
+
                 ...(channel == NotificationChannel.EMAIL
                     ? {
                         emailParams: {
@@ -56,26 +46,8 @@ class ReminderNotificationService {
                         ]
                     }
                 )
-            };
-
-            try {
-                const providerMessageId: string = await notificationExecutor.send(executorPayload);
-
-                await this.notificationDeliveryRepository.markDeliverySubmitted(
-                    delivery.id,
-                    providerMessageId
-                );
-            } catch (error) {
-                logger.error('Failing reason', { error });
-
-                const failedReason = error instanceof Error ? error.message : 'Unknown Reason';
-
-                await this.notificationDeliveryRepository.markDeliveryFailed(
-                    delivery.id,
-                    failedReason
-                );
-            }
-        }
+            })
+        });
     }
 }
 

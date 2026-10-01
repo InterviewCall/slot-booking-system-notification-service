@@ -1,20 +1,21 @@
-import { Worker } from 'bullmq';
+import { UnrecoverableError, Worker } from 'bullmq';
 
 import { bullMqConnection } from '../configs/bullMq.config';
 import logger from '../configs/logger.config';
+import { workerRetentionOptions } from '../configs/queueOptions.config';
 import { REMINDER_NOTIFICATION_PAYLOAD, REMINDER_NOTIFICATION_QUEUE } from '../constants';
 import { BookingReminderNotificationDto } from '../dto/BookingReminderNotification.dto';
 import NotificationRepository from '../repositories/Notification.repository';
 import NotificationDeliveryRepository from '../repositories/NotificationDelivery.repository';
 import ReminderNotificationService from '../services/ReminderNotification.service';
-import { BadRequestError } from '../utils/errors/app.error';
 
 export function setupReminderNotificationProcessor() {
     const reminderProcessor = new Worker<BookingReminderNotificationDto>(
         REMINDER_NOTIFICATION_QUEUE,
         async (job) => {
             if(job.name != REMINDER_NOTIFICATION_PAYLOAD) {
-                throw new BadRequestError('Invalid job name');
+                // retrying cannot fix a job nobody knows how to handle
+                throw new UnrecoverableError('Invalid job name');
             }
 
             const payload = job.data;
@@ -28,7 +29,8 @@ export function setupReminderNotificationProcessor() {
 
         }, {
             connection: bullMqConnection,
-            concurrency: 5
+            concurrency: 5,
+            ...workerRetentionOptions
         }
     );
 

@@ -1,14 +1,11 @@
-import { Notification, NotificationDelivery } from '../../generated/prisma/client';
+import { Notification } from '../../generated/prisma/client';
 import { NotificationType } from '../../generated/prisma/enums';
-import logger from '../configs/logger.config';
 import { BookingNotificationDto } from '../dto/BookingNotification.dto';
 import NotificationRepository from '../repositories/Notification.repository';
 import NotificationDeliveryRepository from '../repositories/NotificationDelivery.repository';
-import { NotificationExecutorStrategy } from '../strategies/NotificationExecutor.strategy';
 import { NotificationExecutorPayload } from '../types/NotificationPayload.type';
 import { NotificationChannel } from '../utils/enums/NotificationChannel.enum';
-import { NotFoundError } from '../utils/errors/app.error';
-import { createNotificationExecutor } from '../utils/executorFactory';
+import { deliverToChannels } from './channelDelivery.helper';
 
 class TransactionalNotificationService {
     private readonly notificationRepository: NotificationRepository;
@@ -19,32 +16,26 @@ class TransactionalNotificationService {
         this.notificationDeliveryRepository = notificationDeliveryRepository;
     }
 
+    // Safe to run again for the same booking: resumes the existing notification and only
+    // sends the channels that have not been delivered yet. Throws if any channel failed.
     async sendNotification(payload: BookingNotificationDto): Promise<void> {
-        const notification: Notification = await this.notificationRepository.createNotification({
+        const notification: Notification = await this.notificationRepository.findOrCreateNotification({
             candidateId: payload.candidateId,
             bookingId: payload.bookingId,
             submissionId: payload.submissionId,
             notificationType: NotificationType.BOOKING_CONFIRMED
         });
 
-        for(const channel of payload.channels) {
-            const delivery: NotificationDelivery = await this.notificationDeliveryRepository.createDelivery(
-                channel,
-                notification.id
-            );
-
-            const notificationExecutor: NotificationExecutorStrategy | null = createNotificationExecutor(channel);
-                
-            if(notificationExecutor == null) {
-                throw new NotFoundError(`Channel not found: ${channel}`);
-            }
-
-            const executorPayload: NotificationExecutorPayload = {
+        await deliverToChannels({
+            notificationId: notification.id,
+            channels: payload.channels,
+            notificationDeliveryRepository: this.notificationDeliveryRepository,
+            buildExecutorPayload: (channel: NotificationChannel): NotificationExecutorPayload => ({
                 recipient: channel == NotificationChannel.EMAIL ? payload.candidateEmail : payload.candidatePhone,
                 candidateName: payload.candidateName,
                 subject: payload.subject,
                 templateKey: payload.templateKeys[channel],
-                
+
                 ...(channel == NotificationChannel.EMAIL
                     ? {
                         emailParams: {
@@ -61,26 +52,8 @@ class TransactionalNotificationService {
                         ]
                     }
                 )
-            };
-
-            try {
-                const providerMessageId: string = await notificationExecutor.send(executorPayload);
-
-                await this.notificationDeliveryRepository.markDeliverySubmitted(
-                    delivery.id,
-                    providerMessageId
-                );
-            } catch (error) {
-                logger.error('Failing reason', { error });
-
-                const failedReason = error instanceof Error ? error.message : 'Unknown Reason';
-
-                await this.notificationDeliveryRepository.markDeliveryFailed(
-                    delivery.id,
-                    failedReason
-                );
-            }
-        }
+            })
+        });
     }
 }
 

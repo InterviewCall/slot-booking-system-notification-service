@@ -1,20 +1,21 @@
-import { Worker } from 'bullmq';
+import { UnrecoverableError, Worker } from 'bullmq';
 
 import { bullMqConnection } from '../configs/bullMq.config';
 import logger from '../configs/logger.config';
+import { workerRetentionOptions } from '../configs/queueOptions.config';
 import { TRANSACTIONAL_NOTIFICATION_PAYLOAD, TRANSACTIONAL_NOTIFICATION_QUEUE } from '../constants';
 import { BookingNotificationDto } from '../dto/BookingNotification.dto';
 import NotificationRepository from '../repositories/Notification.repository';
 import NotificationDeliveryRepository from '../repositories/NotificationDelivery.repository';
 import TransactionalNotificationService from '../services/TransactionalNotification.service';
-import { BadRequestError } from '../utils/errors/app.error';
 
 export function setupTransactionalNotificationProcessor() {
     const transactionalProcessor = new Worker<BookingNotificationDto>(
         TRANSACTIONAL_NOTIFICATION_QUEUE,
         async (job) => {
             if(job.name != TRANSACTIONAL_NOTIFICATION_PAYLOAD) {
-                throw new BadRequestError('Invalid job name');
+                // retrying cannot fix a job nobody knows how to handle
+                throw new UnrecoverableError('Invalid job name');
             }
 
             const payload = job.data;
@@ -28,7 +29,8 @@ export function setupTransactionalNotificationProcessor() {
 
         }, {
             connection: bullMqConnection,
-            concurrency: 5
+            concurrency: 5,
+            ...workerRetentionOptions
         }
     );
 
