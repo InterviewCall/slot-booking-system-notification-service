@@ -7,6 +7,7 @@ import { attachCorrelationIdMiddleware } from './middlewares/correlation.middlew
 import { appErrorHandler, genericErrorHandler } from './middlewares/error.middleware';
 import { setupReminderNotificationProcessor } from './processors/reminderNotification.processor';
 import { setupTransactionalNotificationProcessor } from './processors/transactionalNotification.processor';
+import { setupWorkrSignupNotificationProcessor } from './processors/workrSignupNotification.processor';
 import apiRouter from './routes';
 
 const app = express();
@@ -27,5 +28,6 @@ app.listen(serverConfig.PORT, () => {
     logger.info(`For Queue Dasboard, open http://localhost:${serverConfig.PORT}/ui/queue-dashboard`);
     setupTransactionalNotificationProcessor();
     setupReminderNotificationProcessor();
+    setupWorkrSignupNotificationProcessor();
     logger.info('Transactional notification processor setup completed');
 });

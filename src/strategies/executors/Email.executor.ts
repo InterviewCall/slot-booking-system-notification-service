@@ -26,12 +26,16 @@ export class EmailExecutor implements NotificationExecutorStrategy {
             payload.emailParams
         );
 
+        const fromEmail = payload.emailSender?.fromEmail || sesConfig.SES_FROM_EMAIL;
+        const fromName = payload.emailSender?.fromName || sesConfig.SES_FROM_NAME;
+        const replyTo = payload.emailSender?.replyTo || sesConfig.SES_REPLY_TO_EMAIL;
+
         const command = new SendEmailCommand({
-            FromEmailAddress: `${sesConfig.SES_FROM_NAME} <${sesConfig.SES_FROM_EMAIL}>`,
+            FromEmailAddress: `${fromName} <${fromEmail}>`,
             Destination: {
                 ToAddresses: [payload.recipient]
             },
-            ReplyToAddresses: [sesConfig.SES_REPLY_TO_EMAIL],
+            ReplyToAddresses: [replyTo],
             ConfigurationSetName: sesConfig.SES_CONFIGURATION_SET_NAME,
             Content: {
                 Simple: {

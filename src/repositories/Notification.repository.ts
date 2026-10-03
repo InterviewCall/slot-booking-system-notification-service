@@ -11,7 +11,7 @@ class NotificationRepository implements INotificationRepository {
     }
 
     /**
-     * Returns the notification for this booking / reminder, creating it on the first attempt.
+     * Returns the notification for this booking / reminder / WorkR signup, creating it on the first attempt.
      * A retried (or duplicated) job therefore resumes the same notification instead of failing
      * on the unique constraints.
      */
@@ -45,6 +45,19 @@ class NotificationRepository implements INotificationRepository {
             return await prisma.notification.findFirst({
                 where: {
                     bookingId: data.bookingId,
+                    notificationType: data.notificationType
+                }
+            });
+        }
+
+        if(data.notificationType == NotificationType.WORKR_SIGNUP_DAY0) {
+            if(data.externalRef == null) {
+                return null;
+            }
+
+            return await prisma.notification.findFirst({
+                where: {
+                    externalRef: data.externalRef,
                     notificationType: data.notificationType
                 }
             });

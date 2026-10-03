@@ -26,19 +26,24 @@ enum NotificationSendStatus {
 enum NotificationType {
   BOOKING_CONFIRMED
   FORM_SUBMITTED_SLOT_NOT_BOOKED_CHECK
+  WORKR_SIGNUP_DAY0
 }
 
 model Notification {
   id               BigInt                 @id @default(autoincrement())
   candidateId      BigInt                 @map("candidate_id")
   bookingId        BigInt?                @map("booking_id")
-  submissionId     String                 @map("submission_id") @db.Char(36)
+  // booking / reminder notifications are keyed by submissionId; WorkR notifications have no submission
+  submissionId     String?                @map("submission_id") @db.Char(36)
+  // id of the lead in the system that triggered the notification, e.g. "workr-user-123"
+  externalRef      String?                @map("external_ref") @db.VarChar(64)
   reminderNumber   Int                    @default(0)@map("reminder_number")
   notificationType NotificationType       @map("notification_type")
   deliveries       NotificationDelivery[]
 
   @@unique([bookingId, notificationType])
   @@unique([submissionId, notificationType, reminderNumber])
+  @@unique([externalRef, notificationType])
   @@index([candidateId, bookingId, submissionId])
   @@index([candidateId, submissionId])
   @@index([candidateId])
