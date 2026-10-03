@@ -4,12 +4,17 @@ import { ExpressAdapter } from '@bull-board/express';
 
 import reminderNotificationQueue from '../queues/reminderNotification.queue';
 import transactionalNotificationQueue from '../queues/transactionalNotification.queue';
+import workrSignupNotificationQueue from '../queues/workrSignupNotification.queue';
 
 const serverAdapter = new ExpressAdapter();
 serverAdapter.setBasePath('/ui/queue-dashboard');
 
 createBullBoard({
-    queues: [new BullMQAdapter(transactionalNotificationQueue), new BullMQAdapter(reminderNotificationQueue)],
+    queues: [
+        new BullMQAdapter(transactionalNotificationQueue),
+        new BullMQAdapter(reminderNotificationQueue),
+        new BullMQAdapter(workrSignupNotificationQueue)
+    ],
     serverAdapter
 });
 

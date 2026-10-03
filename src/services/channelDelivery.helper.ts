@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios';
 import { UnrecoverableError } from 'bullmq';
 
 import { NotificationSendStatus } from '../../generated/prisma/client';
@@ -15,7 +16,30 @@ type DeliverToChannelsParams = {
     buildExecutorPayload: (channel: NotificationChannel) => NotificationExecutorPayload
 }
 
+/**
+ * For provider HTTP errors, keep only what is needed to debug (status + the provider's response body).
+ * Logging the whole AxiosError would also print the request config, i.e. the AiSensy API key.
+ */
+function describeError(error: unknown): unknown {
+    if(isAxiosError(error)) {
+        return {
+            message: error.message,
+            status: error.response?.status,
+            responseBody: error.response?.data
+        };
+    }
+
+    return error;
+}
+
 function getErrorMessage(error: unknown): string {
+    if(isAxiosError(error)) {
+        const body = error.response?.data;
+        const detail = typeof body == 'string' ? body : body == null ? '' : JSON.stringify(body);
+
+        return detail ? `${error.message}: ${detail}`.slice(0, 500) : error.message;
+    }
+
     if(error instanceof Error) {
         return error.message;
     }
@@ -63,7 +87,7 @@ export async function deliverToChannels({
 
             await notificationDeliveryRepository.markDeliverySubmitted(delivery.id, providerMessageId);
         } catch (error) {
-            logger.error('Failing reason', { channel, error });
+            logger.error('Failing reason', { channel, error: describeError(error) });
 
             const failedReason = getErrorMessage(error);
 

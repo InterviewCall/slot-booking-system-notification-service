@@ -6,3 +6,6 @@ export const ENGAGEMENT_NOTIFICATION_PAYLOAD = 'payload:engagement-notification'
 
 export const REMINDER_NOTIFICATION_QUEUE = 'reminder-notification-queue';
 export const REMINDER_NOTIFICATION_PAYLOAD = 'payload:reminder-notification';
+
+export const WORKR_SIGNUP_NOTIFICATION_QUEUE = 'workr-signup-notification-queue';
+export const WORKR_SIGNUP_NOTIFICATION_PAYLOAD = 'payload:workr-signup-notification';

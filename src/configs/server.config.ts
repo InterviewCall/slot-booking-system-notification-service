@@ -21,6 +21,12 @@ type SESConfig = {
     SES_CONFIGURATION_SET_NAME: string
 }
 
+type WorkrSesConfig = {
+    SES_FROM_EMAIL: string
+    SES_FROM_NAME: string
+    SES_REPLY_TO_EMAIL: string
+}
+
 type AwsConfig = {
     AWS_REGION: string
     AWS_ACCESS_KEY_ID: string
@@ -64,6 +70,13 @@ export const sesConfig: SESConfig = {
     SES_FROM_NAME: process.env.SES_FROM_NAME || '',
     SES_REPLY_TO_EMAIL: process.env.SES_REPLY_TO_EMAIL || '',
     SES_CONFIGURATION_SET_NAME: process.env.SES_CONFIGURATION_SET_NAME || ''
+};
+
+// Optional sender for WorkR signup emails (e.g. notification.workr.club). Any value left empty falls back to the sesConfig sender.
+export const workrSesConfig: WorkrSesConfig = {
+    SES_FROM_EMAIL: process.env.WORKR_SES_FROM_EMAIL || '',
+    SES_FROM_NAME: process.env.WORKR_SES_FROM_NAME || '',
+    SES_REPLY_TO_EMAIL: process.env.WORKR_SES_REPLY_TO_EMAIL || ''
 };
 
 export const awsConfig: AwsConfig = {

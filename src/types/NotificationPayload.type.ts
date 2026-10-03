@@ -21,6 +21,12 @@ export type ReminderNotificationPayload = {
     templateKeys: Record<NotificationChannel, string>
 }
 
+export type EmailSender = {
+    fromEmail: string
+    fromName: string
+    replyTo: string
+}
+
 export type NotificationExecutorPayload = {
     recipient: string
     candidateName: string
@@ -28,4 +34,6 @@ export type NotificationExecutorPayload = {
     templateKey: string
     emailParams?: Record<string, string>
     whatsAppParams?: string[]
+    // Overrides the default SES sender for this one email
+    emailSender?: EmailSender
 }
