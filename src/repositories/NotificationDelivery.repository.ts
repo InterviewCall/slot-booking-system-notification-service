@@ -1,4 +1,4 @@
-import { NotificationChannel, NotificationDelivery, NotificationSendStatus } from '../../generated/prisma/client';
+import { NotificationChannel, NotificationDelivery, NotificationSendStatus, NotificationType } from '../../generated/prisma/client';
 import { prisma } from '../configs/db.config';
 import { INotificationDeliveryRepository } from '../interfaces/INotificationRepository.interface';
 
@@ -41,6 +41,20 @@ class NotificationDeliveryRepository implements INotificationDeliveryRepository 
 
             throw error;
         }
+    }
+
+    /** Deliveries (with their notification) of the given submissions, oldest first. */
+    async findDeliveriesForSubmissions(submissionIds: string[]) {
+        return prisma.notificationDelivery.findMany({
+            where: {
+                notification: {
+                    submissionId: { in: submissionIds },
+                    notificationType: { not: NotificationType.WORKR_SIGNUP_DAY0 }
+                }
+            },
+            include: { notification: true },
+            orderBy: { id: 'asc' }
+        });
     }
 
     async markDeliverySubmitted(deliveryId: bigint, providerMessageId: string): Promise<void> {

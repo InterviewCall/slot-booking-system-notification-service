@@ -2,11 +2,11 @@ import { SendEmailCommand, SendEmailCommandOutput } from '@aws-sdk/client-sesv2'
 
 import { sesClient } from '../../configs/aws.config';
 import { sesConfig } from '../../configs/server.config';
+import { NotificationExecutorStrategy } from '../../interfaces/INotificationExecutorStrategy.interface';
 import { renderTemplate } from '../../templates/template.handler';
 import { NotificationExecutorPayload } from '../../types/NotificationPayload.type';
-import { TemplateType } from '../../utils/enums/TemplateType.enum';
+import { TemplateType } from '../../utils/enums/TemplateType';
 import { BadRequestError, InternalServerError } from '../../utils/errors/app.error';
-import { NotificationExecutorStrategy } from '../NotificationExecutor.strategy';
 
 export class EmailExecutor implements NotificationExecutorStrategy {
     async send(payload: NotificationExecutorPayload): Promise<string> {

@@ -4,7 +4,7 @@ import { bullMqConnection } from '../configs/bullMq.config';
 import logger from '../configs/logger.config';
 import { workerRetentionOptions } from '../configs/queueOptions.config';
 import { REMINDER_NOTIFICATION_PAYLOAD, REMINDER_NOTIFICATION_QUEUE } from '../constants';
-import { BookingReminderNotificationDto } from '../dto/BookingReminderNotification.dto';
+import { BookingReminderNotificationDto } from '../dtos/BookingReminderNotification.dto';
 import NotificationRepository from '../repositories/Notification.repository';
 import NotificationDeliveryRepository from '../repositories/NotificationDelivery.repository';
 import ReminderNotificationService from '../services/ReminderNotification.service';

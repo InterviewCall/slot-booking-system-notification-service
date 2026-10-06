@@ -1,55 +1,11 @@
-import { isAxiosError } from 'axios';
 import { UnrecoverableError } from 'bullmq';
 
-import { NotificationSendStatus } from '../../generated/prisma/client';
-import logger from '../configs/logger.config';
-import NotificationDeliveryRepository from '../repositories/NotificationDelivery.repository';
-import { NotificationExecutorPayload } from '../types/NotificationPayload.type';
-import { NotificationChannel } from '../utils/enums/NotificationChannel.enum';
-import { DeliveryFailedError } from '../utils/errors/deliveryFailed.error';
-import { createNotificationExecutor } from '../utils/executorFactory';
-
-type DeliverToChannelsParams = {
-    notificationId: bigint
-    channels: NotificationChannel[]
-    notificationDeliveryRepository: NotificationDeliveryRepository
-    buildExecutorPayload: (channel: NotificationChannel) => NotificationExecutorPayload
-}
-
-/**
- * For provider HTTP errors, keep only what is needed to debug (status + the provider's response body).
- * Logging the whole AxiosError would also print the request config, i.e. the AiSensy API key.
- */
-function describeError(error: unknown): unknown {
-    if(isAxiosError(error)) {
-        return {
-            message: error.message,
-            status: error.response?.status,
-            responseBody: error.response?.data
-        };
-    }
-
-    return error;
-}
-
-function getErrorMessage(error: unknown): string {
-    if(isAxiosError(error)) {
-        const body = error.response?.data;
-        const detail = typeof body == 'string' ? body : body == null ? '' : JSON.stringify(body);
-
-        return detail ? `${error.message}: ${detail}`.slice(0, 500) : error.message;
-    }
-
-    if(error instanceof Error) {
-        return error.message;
-    }
-
-    if(typeof error == 'object' && error != null && 'message' in error && typeof error.message == 'string') {
-        return error.message;
-    }
-
-    return 'Unknown Reason';
-}
+import { NotificationSendStatus } from '../../../generated/prisma/client';
+import logger from '../../configs/logger.config';
+import { DeliverToChannelsParams } from '../../types/ChannelDelivery.type';
+import { DeliveryFailedError } from '../errors/deliveryFailed.error';
+import { createNotificationExecutor } from '../factories/executorFactory';
+import { describeError, getErrorMessage } from './error.helper';
 
 /**
  * Sends one notification over every requested channel and is safe to run again for the same notification:

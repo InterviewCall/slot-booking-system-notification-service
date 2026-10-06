@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { NotificationChannel } from '../utils/enums/NotificationChannel.enum';
+import { NotificationChannel } from '../utils/enums/NotificationChannel';
 
 /**
  * Job payload produced by WorkR's User-Service right after a Working Professional signs up.

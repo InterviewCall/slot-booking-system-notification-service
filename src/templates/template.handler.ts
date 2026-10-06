@@ -3,7 +3,7 @@ import Handlebars from 'handlebars';
 import path from 'path';
 
 import logger from '../configs/logger.config';
-import { TemplateType } from '../utils/enums/TemplateType.enum';
+import { TemplateType } from '../utils/enums/TemplateType';
 import { InternalServerError } from '../utils/errors/app.error';
 
 export async function renderTemplate(templateName: string, templateType: TemplateType, params: Record<string, string>): Promise<string> {

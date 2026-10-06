@@ -4,7 +4,7 @@ import { bullMqConnection } from '../configs/bullMq.config';
 import logger from '../configs/logger.config';
 import { workerRetentionOptions } from '../configs/queueOptions.config';
 import { TRANSACTIONAL_NOTIFICATION_PAYLOAD, TRANSACTIONAL_NOTIFICATION_QUEUE } from '../constants';
-import { BookingNotificationDto } from '../dto/BookingNotification.dto';
+import { BookingNotificationDto } from '../dtos/BookingNotification.dto';
 import NotificationRepository from '../repositories/Notification.repository';
 import NotificationDeliveryRepository from '../repositories/NotificationDelivery.repository';
 import TransactionalNotificationService from '../services/TransactionalNotification.service';

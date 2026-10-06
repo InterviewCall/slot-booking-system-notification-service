@@ -1,11 +1,11 @@
 import { Notification } from '../../generated/prisma/client';
 import { NotificationType } from '../../generated/prisma/enums';
-import { BookingNotificationDto } from '../dto/BookingNotification.dto';
+import { BookingNotificationDto } from '../dtos/BookingNotification.dto';
 import NotificationRepository from '../repositories/Notification.repository';
 import NotificationDeliveryRepository from '../repositories/NotificationDelivery.repository';
 import { NotificationExecutorPayload } from '../types/NotificationPayload.type';
-import { NotificationChannel } from '../utils/enums/NotificationChannel.enum';
-import { deliverToChannels } from './channelDelivery.helper';
+import { NotificationChannel } from '../utils/enums/NotificationChannel';
+import { deliverToChannels } from '../utils/helpers/channelDelivery.helper';
 
 class TransactionalNotificationService {
     private readonly notificationRepository: NotificationRepository;

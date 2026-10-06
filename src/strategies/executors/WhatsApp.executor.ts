@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 import { aiSensyConfig } from '../../configs/server.config';
+import { NotificationExecutorStrategy } from '../../interfaces/INotificationExecutorStrategy.interface';
 import { NotificationExecutorPayload } from '../../types/NotificationPayload.type';
 import { WhatsAppApiRequestBody } from '../../types/Request.type';
 import { WhatsAppApiResponse } from '../../types/Response.type';
 import { BadRequestError, InternalServerError } from '../../utils/errors/app.error';
-import { NotificationExecutorStrategy } from '../NotificationExecutor.strategy';
 
 export class WhatsAppExecutor implements NotificationExecutorStrategy {
     async send(payload: NotificationExecutorPayload): Promise<string> {

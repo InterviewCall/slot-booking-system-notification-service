@@ -4,7 +4,7 @@ import { bullMqConnection } from '../configs/bullMq.config';
 import logger from '../configs/logger.config';
 import { workerRetentionOptions } from '../configs/queueOptions.config';
 import { WORKR_SIGNUP_NOTIFICATION_PAYLOAD, WORKR_SIGNUP_NOTIFICATION_QUEUE } from '../constants';
-import { WorkrSignupNotificationDto, workrSignupNotificationSchema } from '../dto/WorkrSignupNotification.dto';
+import { WorkrSignupNotificationDto, workrSignupNotificationSchema } from '../dtos/WorkrSignupNotification.dto';
 import NotificationRepository from '../repositories/Notification.repository';
 import NotificationDeliveryRepository from '../repositories/NotificationDelivery.repository';
 import WorkrSignupNotificationService from '../services/WorkrSignupNotification.service';

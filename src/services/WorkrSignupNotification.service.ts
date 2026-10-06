@@ -1,12 +1,12 @@
 import { NotificationType } from '../../generated/prisma/enums';
 import { sesConfig, workrSesConfig } from '../configs/server.config';
-import { WorkrSignupNotificationDto } from '../dto/WorkrSignupNotification.dto';
+import { WorkrSignupNotificationDto } from '../dtos/WorkrSignupNotification.dto';
 import NotificationRepository from '../repositories/Notification.repository';
 import NotificationDeliveryRepository from '../repositories/NotificationDelivery.repository';
 import { EmailSender, NotificationExecutorPayload } from '../types/NotificationPayload.type';
-import { NotificationChannel } from '../utils/enums/NotificationChannel.enum';
+import { NotificationChannel } from '../utils/enums/NotificationChannel';
+import { deliverToChannels } from '../utils/helpers/channelDelivery.helper';
 import { getFirstName } from '../utils/helpers/name.helper';
-import { deliverToChannels } from './channelDelivery.helper';
 
 /**
  * Sends the product company readiness check message(s) to a candidate who just signed up on WorkR.

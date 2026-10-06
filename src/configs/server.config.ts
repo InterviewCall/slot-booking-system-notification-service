@@ -1,53 +1,6 @@
 import dotenv from 'dotenv';
 
-type ServerConfig = {
-    PORT: number,
-    NODE_ENV?: string
-    REDIS_PORT: number,
-    REDIS_HOST: string,
-    REDIS_PASSWORD?: string,
-    REDIS_TLS: boolean
-}
-
-type QueueConfig = {
-    JOB_ATTEMPTS: number
-    RETRY_BACKOFF_MS: number
-    FAILED_JOB_RETENTION_DAYS: number
-    FAILED_JOB_RETENTION_COUNT: number
-}
-
-type SESConfig = {
-    SES_FROM_EMAIL: string
-    SES_FROM_NAME: string
-    SES_REPLY_TO_EMAIL: string
-    SES_CONFIGURATION_SET_NAME: string
-}
-
-type WorkrSesConfig = {
-    SES_FROM_EMAIL: string
-    SES_FROM_NAME: string
-    SES_REPLY_TO_EMAIL: string
-}
-
-type AwsConfig = {
-    AWS_REGION: string
-    AWS_ACCESS_KEY_ID: string
-    AWS_SECRET_ACCESS_KEY: string
-}
-
-type AiSensyConfig = {
-    AISENSY_API_KEY: string
-    AISENSY_API_URL: string
-}
-
-type DBConfig = {
-    DB_HOST: string
-    DB_USER: string
-    DB_PASSWORD: string
-    DB_NAME: string
-    DB_SSL: boolean
-    DB_SSL_CA_PATH: string
-}
+import { AiSensyConfig, AwsConfig, DBConfig, InternalApiConfig, QueueConfig, ServerConfig, SESConfig, WorkrSesConfig } from '../types/Config.type';
 
 dotenv.config();
 
@@ -111,4 +64,10 @@ export const dbConfig: DBConfig = {
     // RDS: encrypt the connection and verify the server against the AWS CA bundle
     DB_SSL: process.env.DB_SSL == 'true',
     DB_SSL_CA_PATH: process.env.DB_SSL_CA_PATH || '/app/certs/rds-global-bundle.pem'
+};
+
+// Guards the service-to-service endpoints (/internal/*). The booking and form services send the same shared secret.
+export const internalApiConfig: InternalApiConfig = {
+    INTERNAL_API_KEY: process.env.SCHEDULER_INTERNAL_API_KEY || '',
+    INTERNAL_API_KEY_HEADER: process.env.INTERNAL_API_KEY_HEADER || 'x-internal-api-key'
 };
