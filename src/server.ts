@@ -1,8 +1,8 @@
+import cors from 'cors';
 import express from 'express';
-
 import serverAdapter from './configs/bullBoard.config';
 import logger from './configs/logger.config';
-import { serverConfig } from './configs/server.config';
+import { frontendConfig, serverConfig } from './configs/server.config';
 import { attachCorrelationIdMiddleware } from './middlewares/correlation.middleware';
 import { appErrorHandler, genericErrorHandler } from './middlewares/error.middleware';
 import { setupReminderNotificationProcessor } from './processors/reminderNotification.processor';
@@ -11,10 +11,15 @@ import apiRouter from './routes';
 
 const app = express();
 
+app.use(cors({
+    origin: [frontendConfig.ADMIN_FRONTEND_URL],
+    credentials: true
+}));
 
 app.use(express.json());
 
 app.use(attachCorrelationIdMiddleware);
+
 
 app.use('/api', apiRouter);
 app.use('/ui/queue-dashboard', serverAdapter.getRouter());

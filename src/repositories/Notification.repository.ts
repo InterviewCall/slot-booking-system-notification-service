@@ -36,6 +36,18 @@ class NotificationRepository implements INotificationRepository {
         }
     }
 
+    async findBookingNotification(bookingId: bigint): Promise<Notification | null> {
+        return await prisma.notification.findFirst({
+            where: {
+                bookingId,
+                notificationType: NotificationType.BOOKING_CONFIRMED
+            },
+            include: {
+                deliveries: true
+            }
+        });
+    }
+    
     private async findExisting(data: NotificationCreateInput): Promise<Notification | null> {
         if(data.notificationType == NotificationType.BOOKING_CONFIRMED) {
             if(data.bookingId == null) {
