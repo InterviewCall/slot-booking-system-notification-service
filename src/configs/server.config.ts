@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-import { AiSensyConfig, AwsConfig, DBConfig, InternalApiConfig, QueueConfig, ServerConfig, SESConfig, WorkrSesConfig } from '../types/Config.type';
+import { AiSensyConfig, AwsConfig, DBConfig, InternalApiConfig, QueueConfig, ServerConfig, SESConfig, WorkrLookupConfig, WorkrSesConfig } from '../types/Config.type';
 
 dotenv.config();
 
@@ -70,4 +70,11 @@ export const dbConfig: DBConfig = {
 export const internalApiConfig: InternalApiConfig = {
     INTERNAL_API_KEY: process.env.SCHEDULER_INTERNAL_API_KEY || '',
     INTERNAL_API_KEY_HEADER: process.env.INTERNAL_API_KEY_HEADER || 'x-internal-api-key'
+};
+
+// Guards POST /internal/workr/deliveries, which the WorkR User-Service calls to show delivery status in its admin panel.
+// It has its own secret (not the booking one) so the WorkR service never holds a key that opens the booking lookups.
+export const workrLookupConfig: WorkrLookupConfig = {
+    API_KEY: process.env.WORKR_LOOKUP_API_KEY || '',
+    API_KEY_HEADER: process.env.WORKR_LOOKUP_API_KEY_HEADER || 'x-workr-lookup-key'
 };

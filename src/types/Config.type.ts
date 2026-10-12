@@ -52,3 +52,8 @@ export type InternalApiConfig = {
     INTERNAL_API_KEY: string
     INTERNAL_API_KEY_HEADER: string
 }
+
+export type WorkrLookupConfig = {
+    API_KEY: string
+    API_KEY_HEADER: string
+}

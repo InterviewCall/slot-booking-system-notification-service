@@ -58,6 +58,20 @@ class NotificationDeliveryRepository implements INotificationDeliveryRepository 
         });
     }
 
+    /** Deliveries (with their notification) of the given WorkR leads, identified by external_ref, oldest first. */
+    async findDeliveriesForWorkrRefs(externalRefs: string[]) {
+        return prisma.notificationDelivery.findMany({
+            where: {
+                notification: {
+                    externalRef: { in: externalRefs },
+                    notificationType: { in: WORKR_NOTIFICATION_TYPES }
+                }
+            },
+            include: { notification: true },
+            orderBy: { id: 'asc' }
+        });
+    }
+
     async markDeliverySubmitted(deliveryId: bigint, providerMessageId: string): Promise<void> {
         await prisma.notificationDelivery.update({
             where: {
