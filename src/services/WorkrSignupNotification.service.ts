@@ -1,4 +1,3 @@
-import { NotificationType } from '../../generated/prisma/enums';
 import { sesConfig, workrSesConfig } from '../configs/server.config';
 import { WorkrSignupNotificationDto } from '../dtos/WorkrSignupNotification.dto';
 import NotificationRepository from '../repositories/Notification.repository';
@@ -7,9 +6,11 @@ import { EmailSender, NotificationExecutorPayload } from '../types/NotificationP
 import { NotificationChannel } from '../utils/enums/NotificationChannel';
 import { deliverToChannels } from '../utils/helpers/channelDelivery.helper';
 import { getFirstName } from '../utils/helpers/name.helper';
+import { getWorkrNotificationType } from '../utils/helpers/workrNotification.helper';
 
 /**
- * Sends the product company readiness check message(s) to a candidate who just signed up on WorkR.
+ * Sends the WorkR lead-nurture message(s) to a candidate: the readiness check right after signup (step 0)
+ * and the later nurture days (Day 2 .. Day 15), each as its own notification.
  */
 class WorkrSignupNotificationService {
     constructor(
@@ -17,13 +18,15 @@ class WorkrSignupNotificationService {
         private readonly notificationDeliveryRepository: NotificationDeliveryRepository
     ) {}
 
-    // Safe to run again for the same WorkR user: resumes the existing notification and only
+    // Safe to run again for the same WorkR user and step: resumes the existing notification and only
     // sends the channels that have not been delivered yet. Throws if any channel failed.
     async sendNotification(payload: WorkrSignupNotificationDto): Promise<void> {
         const notification = await this.notificationRepository.findOrCreateNotification({
             candidateId: payload.userId,
             externalRef: `workr-user-${payload.userId}`,
-            notificationType: NotificationType.WORKR_SIGNUP_DAY0
+            notificationType: getWorkrNotificationType(payload.step),
+            // for the nurture days this is the day number, which keeps each day a separate notification
+            reminderNumber: payload.step
         });
 
         const firstName = getFirstName(payload.candidateName);

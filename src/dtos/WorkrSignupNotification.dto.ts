@@ -1,13 +1,17 @@
 import { z } from 'zod';
 
 import { NotificationChannel } from '../utils/enums/NotificationChannel';
+import { isValidWorkrStep, WORKR_SIGNUP_STEP } from '../utils/helpers/workrNotification.helper';
 
 /**
- * Job payload produced by WorkR's User-Service right after a Working Professional signs up.
+ * Job payload produced by WorkR's User-Service right after a Working Professional signs up, and again
+ * whenever a later nurture day (Day 2 .. Day 15) is due.
  * It crosses a service boundary, so the processor validates it before anything is sent.
  */
 export const workrSignupNotificationSchema = z.object({
     userId: z.number().int().positive(),
+    // 0 = the signup (Day 0) message, otherwise the nurture day (2, 4, 5, 7, 10, 12, 15). Producers that send no step mean Day 0.
+    step: z.number().int().refine(isValidWorkrStep, { message: 'Unknown WorkR nurture step' }).default(WORKR_SIGNUP_STEP),
     candidateName: z.string().trim().min(1),
     candidateEmail: z.string().trim().email(),
     // E.164 (+91XXXXXXXXXX); may be empty when the user has no usable number (then WHATSAPP must not be requested)

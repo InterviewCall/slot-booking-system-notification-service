@@ -27,6 +27,8 @@ enum NotificationType {
   BOOKING_CONFIRMED
   FORM_SUBMITTED_SLOT_NOT_BOOKED_CHECK
   WORKR_SIGNUP_DAY0
+  // WorkR nurture days (Day 2 .. Day 15): the day number is stored in reminder_number
+  WORKR_NURTURE
 }
 
 model Notification {
@@ -43,7 +45,7 @@ model Notification {
 
   @@unique([bookingId, notificationType])
   @@unique([submissionId, notificationType, reminderNumber])
-  @@unique([externalRef, notificationType])
+  @@unique([externalRef, notificationType, reminderNumber], map: "notifications_external_ref_type_reminder_key")
   @@index([candidateId, bookingId, submissionId])
   @@index([candidateId, submissionId])
   @@index([candidateId])

@@ -1,6 +1,7 @@
-import { NotificationChannel, NotificationDelivery, NotificationSendStatus, NotificationType } from '../../generated/prisma/client';
+import { NotificationChannel, NotificationDelivery, NotificationSendStatus } from '../../generated/prisma/client';
 import { prisma } from '../configs/db.config';
 import { INotificationDeliveryRepository } from '../interfaces/INotificationRepository.interface';
+import { WORKR_NOTIFICATION_TYPES } from '../utils/helpers/workrNotification.helper';
 
 class NotificationDeliveryRepository implements INotificationDeliveryRepository {
     async createDelivery(channel: NotificationChannel, notificationId: bigint): Promise<NotificationDelivery> {
@@ -49,7 +50,7 @@ class NotificationDeliveryRepository implements INotificationDeliveryRepository 
             where: {
                 notification: {
                     submissionId: { in: submissionIds },
-                    notificationType: { not: NotificationType.WORKR_SIGNUP_DAY0 }
+                    notificationType: { notIn: WORKR_NOTIFICATION_TYPES }
                 }
             },
             include: { notification: true },

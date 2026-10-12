@@ -1,6 +1,6 @@
-import { NotificationType } from '../../generated/prisma/client';
 import NotificationDeliveryRepository from '../repositories/NotificationDelivery.repository';
 import { NotificationLookupItem } from '../types/NotificationLookup.type';
+import { isWorkrNotificationType } from '../utils/helpers/workrNotification.helper';
 
 class NotificationLookupService {
     constructor(private readonly notificationDeliveryRepository: NotificationDeliveryRepository) {}
@@ -17,7 +17,7 @@ class NotificationLookupService {
 
         return deliveries
             // the query already filters on submissionId, this keeps the type honest and WorkR rows out
-            .filter((delivery) => delivery.notification.submissionId !== null && delivery.notification.notificationType !== NotificationType.WORKR_SIGNUP_DAY0)
+            .filter((delivery) => delivery.notification.submissionId !== null && !isWorkrNotificationType(delivery.notification.notificationType))
             .map((delivery) => ({
                 id: delivery.id.toString(),
                 submissionId: delivery.notification.submissionId as string,
