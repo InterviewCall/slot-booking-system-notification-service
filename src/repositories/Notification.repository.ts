@@ -49,6 +49,20 @@ class NotificationRepository implements INotificationRepository {
                 }
             });
         }
+        
+        // VSL notifications are identified by their stable external reference.
+        if (data.notificationType === NotificationType.VSL_ABANDONMENT) {
+            if (data.externalRef == null) {
+                return null;
+            }
+
+            return await prisma.notification.findFirst({
+                where: {
+                    externalRef: data.externalRef,
+                    notificationType: data.notificationType,
+                },
+            });
+        }
 
         if(data.notificationType == NotificationType.WORKR_SIGNUP_DAY0) {
             if(data.externalRef == null) {
