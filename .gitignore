@@ -4,3 +4,7 @@ dist/
 logs/
 /generated/prisma
 .DS_Store
+
+# deploy.sh state / previous build
+.deploy/
+dist.prev/
